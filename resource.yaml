@@ -1,0 +1,74 @@
+# Copyright (c) Contrasec 2022
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: elasticsearch
+  name: elasticsearch
+spec:
+  selector:
+    matchLabels:
+      app: elasticsearch
+  replicas: 1
+  serviceName: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: elasticsearch:5.6
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: "discovery.type"
+          value: "single-node"
+        - name: ES_JAVA_OPTS
+          value: "-Dlog4j2.formatMsgNoLookups=true"
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: 50m
+          limits:
+            cpu: 1
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: data
+      restartPolicy: Always
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        annotations:
+        name: data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: elasticsearch
+  name: elasticsearch
+spec:
+  ports:
+  - name: "9200"
+    port: 9200
+    targetPort: 9200
+  - name: "9300"
+    port: 9300
+    targetPort: 9300
+  type: ClusterIP
+  selector:
+    app: elasticsearch
+status:
+  loadBalancer: {}
