@@ -1,5 +1,5 @@
 # Components-Elasticsearch
-for the ODALA project.
+for the ODALA project. Elasticsearch is required by Umbrella for analytics.
 
 © 2022 Contrasec Oy
 
